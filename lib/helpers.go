@@ -1,8 +1,6 @@
 package lib
 
 import (
-	Mod "flx/model"
-
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
@@ -11,21 +9,17 @@ import (
 	"os"
 )
 
-func GetListingVariantBySku(sku []string) interface{} {
+func GetData(path string, model interface{}) interface{} {
 
 	client := &http.Client{}
 
-	param := Mod.GetListingVariant{
-		Skus: sku,
-	}
-
-	jsonParam, err := json.Marshal(param)
+	jsonParam, err := json.Marshal(model)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	req, err := http.NewRequest("GET", Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, bytes.NewBuffer(jsonParam))
+	req, err := http.NewRequest("GET", path, bytes.NewBuffer(jsonParam))
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-API-TOKEN", os.Getenv("FLX_API_TOKEN"))

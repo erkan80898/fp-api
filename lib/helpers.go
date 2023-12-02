@@ -3,22 +3,77 @@ package lib
 import (
 	"bytes"
 	"encoding/json"
-	Mod "flx/model"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 )
 
-/*
-* Amazon -> 14226
-* Walmart -> 28448
- */
-func GetChannels() []interface{} {
-	x := GetDataList(Mod.FLX_URL+Mod.CHANNEL_URL_EXT, Mod.GetChannels{})
-	return x
+// GET //
+
+func GetDataList(path string, token string) []interface{} {
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", path, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-API-TOKEN", token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var objBody []interface{}
+
+	json.Unmarshal(body, &objBody)
+	return objBody
+
 }
-func GetDataList(path string, model interface{}) []interface{} {
+
+func GetDataJson(path string, token string) map[string]interface{} {
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", path, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-API-TOKEN", token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var objBody map[string]interface{}
+
+	json.Unmarshal(body, &objBody)
+	return objBody
+
+}
+
+// POST //
+
+func PostDataList(path string, model interface{}, token string) []interface{} {
 
 	client := &http.Client{}
 
@@ -31,7 +86,7 @@ func GetDataList(path string, model interface{}) []interface{} {
 	req, err := http.NewRequest("GET", path, bytes.NewBuffer(jsonParam))
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-API-TOKEN", os.Getenv("FLX_API_TOKEN"))
+	req.Header.Set("X-API-TOKEN", token)
 
 	if err != nil {
 		log.Fatal(err)
@@ -55,7 +110,7 @@ func GetDataList(path string, model interface{}) []interface{} {
 	return objBody
 }
 
-func GetDataJson(path string, model interface{}) map[string]interface{} {
+func PostDataJson(path string, model interface{}) map[string]interface{} {
 
 	client := &http.Client{}
 

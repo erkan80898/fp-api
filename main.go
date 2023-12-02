@@ -29,6 +29,6 @@ func main() {
 	// 	// sourceData[sources[i]][0] = len(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH, model.GetInventoryVariant{SourceId: sources[i]}))
 	// }
 
-	extent := Mod.QueryUrl(Mod.GetInventoryVariant{Page: 1})
+	extent := Mod.QueryUrl(Mod.GetInventoryVariant{Page: 4})
 	pretty.Print(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH+extent, os.Getenv("FLX_AB_TOKEN")))
 }

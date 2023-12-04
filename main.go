@@ -7,15 +7,55 @@ package main
 import (
 	Lib "flx/lib"
 	Mod "flx/model"
+	"fmt"
 	"os"
-
-	"github.com/kr/pretty"
+	"sync"
+	"sync/atomic"
 )
 
-func main() {
+const POOLLIMIT = 40
+const WORKERS = POOLLIMIT
 
-	extent := Mod.QueryUrl(Mod.GetInventoryVariant{Page: 4})
-	// pretty.Print(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH+extent, os.Getenv("FLX_AB_TOKEN")))
-	// pretty.Print(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH+extent, os.Getenv("FLX_SS_TOKEN")))
-	pretty.Print(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH+extent, os.Getenv("FLX_SM_TOKEN")))
+type Tokens struct {
+	sources  []string
+	channels []string
+}
+
+func gatherTokens() Tokens {
+	return Tokens{
+		sources: []string{"AB", "SS", "SM"},
+	}
+}
+
+func main() {
+	CountSourceVariant()
+}
+
+func CountSourceVariant() {
+	tokens := gatherTokens()
+	sourceTokens := []string{os.Getenv("FLX_AB_TOKEN"), os.Getenv("FLX_SS_TOKEN"), os.Getenv("FLX_SM_TOKEN")}
+	for i := 0; i < len(sourceTokens); i++ {
+		var wg sync.WaitGroup
+		var ops atomic.Uint64
+
+		wg.Add(WORKERS)
+
+		for j := 1; j <= WORKERS; j++ {
+			go ConcurrentCount(j, &wg, &ops, sourceTokens[i])
+		}
+
+		wg.Wait()
+		fmt.Printf("%s count: %d\n", tokens.sources[i], ops.Load())
+	}
+}
+
+func ConcurrentCount(step int, wg *sync.WaitGroup, ops *atomic.Uint64, token string) {
+	count := 0
+	query := Mod.GetInventoryVariant{Page: step, PageSize: 100}
+
+	for count = len(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH+Mod.QueryUrl(query), token)); count != 0; count = len(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH+Mod.QueryUrl(query), token)) {
+		ops.Add(uint64(count))
+		query.Page += WORKERS
+	}
+	wg.Done()
 }

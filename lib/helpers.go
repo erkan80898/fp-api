@@ -42,8 +42,9 @@ func HandleRateLimiting(resp *http.Header) error {
 		return err
 	}
 
-	if pool == used-1 {
-		time.Sleep(time.Second * time.Duration((pool / int(replenishRate))))
+	if pool <= used {
+		println("RATE LIMIT REACHED : ON HOLD")
+		time.Sleep(time.Duration(time.Duration(pool / int(replenishRate)).Seconds()))
 	}
 
 	return nil

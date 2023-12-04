@@ -1,20 +1,17 @@
 package lib
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 )
 
-// GET //
+func AwaitResponse(method string, path string, token string) *http.Response {
 
-func GetDataList(path string, token string) []interface{} {
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", path, nil)
+	req, err := http.NewRequest(method, path, nil)
 
 	if err != nil {
 		log.Fatal(err)
@@ -26,7 +23,13 @@ func GetDataList(path string, token string) []interface{} {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return resp
+}
 
+// GET //
+func GetDataList(path string, token string) []interface{} {
+
+	resp := AwaitResponse("GET", path, token)
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -42,21 +45,8 @@ func GetDataList(path string, token string) []interface{} {
 }
 
 func GetDataJson(path string, token string) map[string]interface{} {
-	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", path, nil)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-API-TOKEN", token)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	resp := AwaitResponse("GET", path, token)
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -72,31 +62,9 @@ func GetDataJson(path string, token string) map[string]interface{} {
 }
 
 // POST //
-
 func PostDataList(path string, model interface{}, token string) []interface{} {
 
-	client := &http.Client{}
-
-	jsonParam, err := json.Marshal(model)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(jsonParam))
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-API-TOKEN", token)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	resp := AwaitResponse("POST", path, token)
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -110,30 +78,9 @@ func PostDataList(path string, model interface{}, token string) []interface{} {
 	return objBody
 }
 
-func PostDataJson(path string, model interface{}) map[string]interface{} {
+func PostDataJson(path string, model interface{}, token string) map[string]interface{} {
 
-	client := &http.Client{}
-
-	jsonParam, err := json.Marshal(model)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req, err := http.NewRequest("GET", path, bytes.NewBuffer(jsonParam))
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-API-TOKEN", os.Getenv("FLX_API_TOKEN"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	resp := AwaitResponse("POST", path, token)
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)

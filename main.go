@@ -1,9 +1,5 @@
 package main
 
-//sm -> 612515
-//fol -> 570935
-//sns -> 47537
-//ab -> 48226
 import (
 	Lib "flx/lib"
 	Mod "flx/model"
@@ -14,7 +10,6 @@ import (
 )
 
 const POOLLIMIT = 40
-const WORKERS = POOLLIMIT
 
 type Tokens struct {
 	sources  []string
@@ -23,39 +18,42 @@ type Tokens struct {
 
 func gatherTokens() Tokens {
 	return Tokens{
-		sources: []string{"AB", "SS", "SM"},
+		sources:  []string{"AB", "SS", "SM"},
+		channels: []string{"Amazon", "Walmart"},
 	}
 }
 
 func main() {
-	CountSourceVariant()
+	sources := []string{os.Getenv("FLX_AB_TOKEN"), os.Getenv("FLX_SS_TOKEN"), os.Getenv("FLX_SM_TOKEN")}
+	channels := []string{os.Getenv("FLX_AZ_TOKEN"), os.Getenv("FLX_WALMART_TOKEN")}
+
+	CountVariants(Mod.GET_INVENTORY_VARIANTS_PATH, Mod.GetInventoryVariant{Page: 0, PageSize: 100}, sources, gatherTokens().sources, "Inventory Variant Count:")
+	CountVariants(Mod.GET_PRODUCT_VARIANTS_PATH, Mod.GetProductVariant{Page: 0, PageSize: 100}, sources, gatherTokens().sources, "Product Variant Count:")
+	CountVariants(Mod.GET_LISTING_VARIANTS_PATH, Mod.GetListingVariant{Page: 0, PageSize: 100}, channels, gatherTokens().channels, "Listing Variant Count:")
+
 }
 
-func CountSourceVariant() {
-	tokens := gatherTokens()
-	sourceTokens := []string{os.Getenv("FLX_AB_TOKEN"), os.Getenv("FLX_SS_TOKEN"), os.Getenv("FLX_SM_TOKEN")}
-	for i := 0; i < len(sourceTokens); i++ {
+func CountVariants[T Mod.GetFamily](path string, query T, tokens []string, tokenNames []string, message string) {
+	for i := 0; i < len(tokens); i++ {
 		var wg sync.WaitGroup
 		var ops atomic.Uint64
 
-		wg.Add(WORKERS)
+		wg.Add(POOLLIMIT)
 
-		for j := 1; j <= WORKERS; j++ {
-			go ConcurrentCount(j, &wg, &ops, sourceTokens[i])
+		for j := 1; j <= POOLLIMIT; j++ {
+			query = query.StepPage(j).(T)
+			go ConcurrentCount(path, &wg, &ops, tokens[i], query)
 		}
-
 		wg.Wait()
-		fmt.Printf("%s count: %d\n", tokens.sources[i], ops.Load())
+		fmt.Printf("%s "+message+" %d\n", tokenNames[i], ops.Load())
 	}
 }
 
-func ConcurrentCount(step int, wg *sync.WaitGroup, ops *atomic.Uint64, token string) {
-	count := 0
-	query := Mod.GetInventoryVariant{Page: step, PageSize: 100}
+func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ops *atomic.Uint64, token string, query T) {
 
-	for count = len(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH+Mod.QueryUrl(query), token)); count != 0; count = len(Lib.GetDataList(Mod.GET_INVENTORY_VARIANTS_PATH+Mod.QueryUrl(query), token)) {
+	for count := len(Lib.GetDataList(path+Mod.QueryUrl(query), token)); count != 0; count = len(Lib.GetDataList(path+Mod.QueryUrl(query), token)) {
 		ops.Add(uint64(count))
-		query.Page += WORKERS
+		query = query.StepPage(POOLLIMIT).(T)
 	}
 	wg.Done()
 }

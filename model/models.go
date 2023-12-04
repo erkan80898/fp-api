@@ -28,17 +28,10 @@ const (
 	GET_SEARCH_VARIANTS_PATH    = FLX_URL + INVENTORY_URL_EXT + SEARCH_URL_EXT + VARIANT_URL_EXT
 )
 
-const (
-	AMAZON  int = 48226
-	WALMART int = 47537
-)
-
-const (
-	SNS int = 47537
-	AB  int = 48226
-	SM  int = 612515
-	FOL int = 570935
-)
+type GetFamily interface {
+	GetInventoryVariant | GetProductVariant | GetListingVariant
+	StepPage(int) interface{}
+}
 
 type GetInventoryVariant struct {
 	Page                    int      `json:"page"`
@@ -56,6 +49,11 @@ type GetInventoryVariant struct {
 	Skus                    []string `json:"skus"`
 	SourceId                int      `json:"sourceId"`
 	UpdatedAfter            string   `json:"updatedAfter"`
+}
+
+func (x GetInventoryVariant) StepPage(step int) interface{} {
+	x.Page += step
+	return x
 }
 
 type GetProductVariant struct {
@@ -79,6 +77,11 @@ type GetProductVariant struct {
 	UpdatedAfter            string   `json:"updatedAfter"`
 }
 
+func (x GetProductVariant) StepPage(step int) interface{} {
+	x.Page += step
+	return x
+}
+
 type GetListingVariant struct {
 	IncludeOverwrites       bool     `json:"includeOverwrites"`
 	IncludeTags             bool     `json:"includeTags"`
@@ -97,6 +100,11 @@ type GetListingVariant struct {
 	Skus                    []string `json:"skus"`
 	Sync                    bool     `json:"sync"`
 	UpdatedAfter            string   `json:"updatedAfter"`
+}
+
+func (x GetListingVariant) StepPage(step int) interface{} {
+	x.Page += step
+	return x
 }
 
 type GetChannels struct {
@@ -123,8 +131,7 @@ type GetSearchInventoryVariants struct {
 	Ids                         []int    `json:"ids"`
 }
 
-func QueryUrl(data interface{}) string {
-
+func QueryUrl[T GetFamily](data T) string {
 	res := "?"
 
 	v := reflect.ValueOf(data)

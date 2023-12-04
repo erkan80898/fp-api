@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 func AwaitResponse(method string, path string, token string) *http.Response {
@@ -26,12 +28,37 @@ func AwaitResponse(method string, path string, token string) *http.Response {
 	return resp
 }
 
+func HandleRateLimiting(resp *http.Header) error {
+	pool, err := strconv.Atoi(resp.Get("X-Auth-Pool-Size"))
+	if err != nil {
+		return err
+	}
+	used, err := strconv.Atoi(resp.Get("X-Auth-Pool-Used"))
+	if err != nil {
+		return err
+	}
+	replenishRate, err := strconv.ParseFloat(resp.Get("X-Auth-Replenished-Per-Second"), 10)
+	if err != nil {
+		return err
+	}
+
+	if pool == used-1 {
+		time.Sleep(time.Second * time.Duration((pool / int(replenishRate))))
+	}
+
+	return nil
+}
+
 // GET //
 func GetDataList(path string, token string) []interface{} {
 
 	resp := AwaitResponse("GET", path, token)
-	defer resp.Body.Close()
 
+	if err := HandleRateLimiting(&resp.Header); err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -47,8 +74,12 @@ func GetDataList(path string, token string) []interface{} {
 func GetDataJson(path string, token string) map[string]interface{} {
 
 	resp := AwaitResponse("GET", path, token)
-	defer resp.Body.Close()
 
+	if err := HandleRateLimiting(&resp.Header); err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -65,8 +96,12 @@ func GetDataJson(path string, token string) map[string]interface{} {
 func PostDataList(path string, model interface{}, token string) []interface{} {
 
 	resp := AwaitResponse("POST", path, token)
-	defer resp.Body.Close()
 
+	if err := HandleRateLimiting(&resp.Header); err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -81,6 +116,11 @@ func PostDataList(path string, model interface{}, token string) []interface{} {
 func PostDataJson(path string, model interface{}, token string) map[string]interface{} {
 
 	resp := AwaitResponse("POST", path, token)
+
+	if err := HandleRateLimiting(&resp.Header); err != nil {
+		log.Fatal(err)
+	}
+
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)

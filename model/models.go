@@ -16,8 +16,8 @@ const (
 	VARIANT_URL_EXT        = "variant/"
 	PLURAL_PARENT_URL_EXT  = "parents/"
 	PLURAL_VARIANT_URL_EXT = "variants/"
-
-	SEARCH_URL_EXT = "search/"
+	COUNT_URL_EXT          = "count/"
+	SEARCH_URL_EXT         = "search/"
 )
 
 const (
@@ -34,21 +34,22 @@ type GetFamily interface {
 }
 
 type GetInventoryVariant struct {
-	Page                    int      `json:"page"`
-	PageSize                int      `json:"pageSize"`
-	FilterArchived          bool     `json:"filterArchived"`
-	FilterNeedsDeleting     bool     `json:"filterNeedsDeleting"`
-	Ids                     []int    `json:"ids"`
-	IncludeAttributes       bool     `json:"includeAttributes"`
-	IncludeCategories       bool     `json:"includeCategories"`
-	IncludeCustomAggregates bool     `json:"includeCustomAggregates"`
-	IncludeCustomFields     bool     `json:"includeCustomFields"`
-	IncludeImages           bool     `json:"includeImages"`
-	IncludeOptions          bool     `json:"includeOptions"`
-	IncludeParent           bool     `json:"includeParent"`
-	Skus                    []string `json:"skus"`
-	SourceId                int      `json:"sourceId"`
-	UpdatedAfter            string   `json:"updatedAfter"`
+	Page                         int      `json:"page"`
+	PageSize                     int      `json:"pageSize"`
+	FilterArchived               bool     `json:"filterArchived"`
+	FilterNeedsDeleting          bool     `json:"filterNeedsDeleting"`
+	Ids                          []int    `json:"ids"`
+	IncludeAttributes            bool     `json:"includeAttributes"`
+	IncludeCategories            bool     `json:"includeCategories"`
+	IncludeCustomAggregates      bool     `json:"includeCustomAggregates"`
+	IncludeCustomFields          bool     `json:"includeCustomFields"`
+	IncludeImages                bool     `json:"includeImages"`
+	IncludeLinkedProductVariants bool     `json:"includeLinkedProductVariants"`
+	IncludeOptions               bool     `json:"includeOptions"`
+	IncludeParent                bool     `json:"includeParent"`
+	Skus                         []string `json:"skus"`
+	SourceId                     int      `json:"sourceId"`
+	UpdatedAfter                 string   `json:"updatedAfter"`
 }
 
 func (x GetInventoryVariant) StepPage(step int) interface{} {
@@ -63,7 +64,7 @@ type GetProductVariant struct {
 	Deleting                bool     `json:"deleting"`
 	Ids                     []int    `json:"ids"`
 	IncludeAttributes       bool     `json:"includeAttributes"`
-	IncludeBundleComponents bool     `json:"IncludeBundleComponents"`
+	IncludeBundleComponents bool     `json:"includeBundleComponents"`
 	IncludeCategories       bool     `json:"includeCategories"`
 	IncludeCustomAggregates bool     `json:"includeCustomAggregates"`
 	IncludeCustomFields     bool     `json:"includeCustomFields"`
@@ -131,7 +132,20 @@ type GetSearchInventoryVariants struct {
 	Ids                         []int    `json:"ids"`
 }
 
-func QueryUrl[T GetFamily](data T) string {
+type GetCountListingVariant struct {
+	BasicsUpdatedAfter  string   `json:"basicsUpdatedAfter"`
+	ChannelId           int      `json:"channelId"`
+	IncludeDeleting     bool     `json:"includeDeleting"`
+	IncludeImagesCached bool     `json:"includeImagesCached"`
+	IncludePaused       bool     `json:"includePaused"`
+	MinimumQuantity     int      `json:"minimumQuantity"`
+	Publish             bool     `json:"publish"`
+	Skus                []string `json:"skus"`
+	Sync                bool     `json:"sync"`
+	UpdatedAfter        string   `json:"updatedAfter"`
+}
+
+func QueryUrl(data interface{}) string {
 	res := "?"
 
 	v := reflect.ValueOf(data)

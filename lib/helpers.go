@@ -69,7 +69,6 @@ func GetDataList(path string, token string) []interface{} {
 
 	json.Unmarshal(body, &objBody)
 	return objBody
-
 }
 
 func GetDataJson(path string, token string) map[string]interface{} {

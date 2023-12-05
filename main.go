@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flx/lib"
 	Lib "flx/lib"
 	Mod "flx/model"
 	"fmt"
@@ -32,6 +33,7 @@ func main() {
 	}
 
 	pretty.Print(toWriteStruct)
+	lib.WriteJsonToFile("output.txt", toWriteStruct)
 }
 
 func CountVariants[T Mod.GetFamily](path string, query T, tokens []string, tokenNames []string, message string, extra bool) ([]int, []int) {
@@ -71,7 +73,6 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 			ch <- count
 			if extra {
 				chExtra <- len(resp[0].(map[string]interface{})["linkedProductVariants"].([]interface{}))
-				println(chExtra)
 				for i := 1; i < count; i++ {
 					x := <-chExtra
 					chExtra <- x + len(resp[i].(map[string]interface{})["linkedProductVariants"].([]interface{}))

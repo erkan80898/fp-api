@@ -1,7 +1,11 @@
 package lib
 
 import (
+	"encoding/json"
 	Mod "flx/model"
+	"io/ioutil"
+	"log"
+	"os"
 )
 
 type VariantCountAll struct {
@@ -28,4 +32,13 @@ func InitVariantCountAll() VariantCountAll {
 	}
 
 	return VariantCountAll{invVar, productVar, channelVar}
+}
+
+func WriteJsonToFile(fileName string, data interface{}) {
+	jsonData, err := json.Marshal(data)
+
+	if err != nil {
+		log.Panic(err)
+	}
+	ioutil.WriteFile(fileName, jsonData, os.ModePerm)
 }

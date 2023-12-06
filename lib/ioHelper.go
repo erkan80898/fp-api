@@ -3,7 +3,7 @@ package lib
 import (
 	"encoding/json"
 	Mod "flx/model"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -42,5 +42,14 @@ func WriteJsonToFile(fileName string, data interface{}) {
 	if err != nil {
 		log.Panic(err)
 	}
-	ioutil.WriteFile(fileName, jsonData, os.ModePerm)
+
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if _, err := io.WriteString(file, string(jsonData)+"\n"); err != nil {
+		log.Panic(err)
+	}
 }

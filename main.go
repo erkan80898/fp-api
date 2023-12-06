@@ -4,7 +4,6 @@ import (
 	"flx/lib"
 	Lib "flx/lib"
 	Mod "flx/model"
-	"fmt"
 	"sync"
 	"time"
 )
@@ -58,7 +57,6 @@ func CountVariants[T Mod.GetFamily](path string, query T, tokens []string, token
 		if extra == true {
 			resultsExtra = append(resultsExtra, valExtra)
 		}
-		fmt.Printf("%s "+message+" %d\n", tokenNames[i], val)
 	}
 	return results, resultsExtra
 }

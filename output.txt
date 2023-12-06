@@ -1,1 +1,2 @@
-{"InventoryVariant":{"AB":139656,"SM":120446,"SS":56818},"ProductVariant":{"AB":139025,"SM":0,"SS":56688},"ChannelVariant":{"Amazon":225724,"Walmart":31768}}
+{"InventoryVariant":{"AB":0,"SM":0,"SS":0},"ProductVariant":{"AB":0,"SM":0,"SS":0},"ChannelVariant":{"Amazon":225740,"Walmart":31768},"CreatedAt":"2023-12-06T12:04:45.170716001-05:00"}
+{"InventoryVariant":{"AB":0,"SM":0,"SS":0},"ProductVariant":{"AB":0,"SM":0,"SS":0},"ChannelVariant":{"Amazon":225740,"Walmart":31768},"CreatedAt":"2023-12-06T12:04:46.652755818-05:00"}

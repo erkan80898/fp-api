@@ -145,6 +145,23 @@ type GetCountListingVariant struct {
 	UpdatedAfter        string   `json:"updatedAfter"`
 }
 
+type CreateOrUpdateListingVariant struct {
+	ModifyChannelData         string `json:"modifyChannelData,omitempty"`
+	ModifyContent             string `json:"modifyContent,omitempty"`
+	ModifyDimensions          string `json:"modifyDimensions,omitempty"`
+	ModifyIdentifiers         string `json:"modifyIdentifiers,omitempty"`
+	ModifyImages              string `json:"modifyImages,omitempty"`
+	ModifyOptions             string `json:"modifyOptions,omitempty"`
+	ModifyPriceOverwrite      string `json:"modifyPriceOverwrite,omitempty"`
+	ModifyPublishData         string `json:"modifyPublishData,omitempty"`
+	ModifyQuantityOverwrite   string `json:"modifyQuantityOverwrite,omitempty"`
+	ModifyStatusData          string `json:"modifyStatusData,omitempty"`
+	ModifySyncData            string `json:"modifySyncData,omitempty"`
+	ModifyVariantCustomFields string `json:"modifyVariantCustomFields,omitempty"`
+	RestrictCreateOrUpdate    string `json:"restrictCreateOrUpdate,omitempty"`
+	MasterSkuUpdateContent    bool   `json:"masterSkuUpdateContent,omitempty"`
+}
+
 func QueryUrl(data interface{}) string {
 	res := "?"
 
@@ -176,26 +193,25 @@ func QueryUrl(data interface{}) string {
 			val := v.Field(i).Interface().(bool)
 			res += valName + "=" + strconv.FormatBool(val)
 
-		case reflect.Array:
-			if reflect.SliceOf(v.Field(i).Type()).Kind() == reflect.Int {
-				res += valName + "="
+		case reflect.Slice:
+			if v.Field(i).Type().Elem().Kind() == reflect.Int {
 				val := v.Field(i).Interface().([]int)
 				if len(val) == 0 {
 					continue
 				}
+				res += valName + "="
 				for i := 0; i < len(val); i++ {
-					res += strconv.Itoa(val[i]) + ","
+					res += "&" + valName + "=" + strconv.Itoa(val[i])
 				}
 			} else {
-				res += valName + "="
 				val := v.Field(i).Interface().([]string)
 
 				if len(val) == 0 {
 					continue
 				}
-
+				res += valName + "="
 				for i := 0; i < len(val); i++ {
-					res += val[i] + ","
+					res += "&" + valName + "=" + val[i]
 				}
 			}
 		}

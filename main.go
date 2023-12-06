@@ -6,11 +6,18 @@ import (
 	Mod "flx/model"
 	"sync"
 	"time"
+
+	"github.com/kr/pretty"
 )
 
 const POOLLIMIT = 40
 
 func main() {
+	_, channels := Mod.RequestTokens()
+	pretty.Println(GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, channels[0], Mod.GetListingVariant{Skus: []string{"F_M_CRW_WHT_XL"}}))
+}
+
+func BeginCount() {
 	sources, channels := Mod.RequestTokens()
 	sourceNames := Mod.GatherTokens().Sources
 	channelNames := Mod.GatherTokens().Channels
@@ -95,4 +102,9 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 func CountListingVariants(channelNames []string, channelTokens []string, query Mod.GetCountListingVariant) map[string]int {
 	return (map[string]int{channelNames[0]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[0])["count"].(float64)),
 		channelNames[1]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[1])["count"].(float64))})
+}
+
+func GetVariants[T Mod.GetFamily](path string, token string, query T) []interface{} {
+	println(Mod.QueryUrl(query))
+	return Lib.GetDataList(path+Mod.QueryUrl(query), token)
 }

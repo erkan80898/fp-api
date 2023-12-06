@@ -1,2 +1,0 @@
-{"InventoryVariant":{"AB":0,"SM":0,"SS":0},"ProductVariant":{"AB":0,"SM":0,"SS":0},"ChannelVariant":{"Amazon":225740,"Walmart":31768},"CreatedAt":"2023-12-06T12:04:45.170716001-05:00"}
-{"InventoryVariant":{"AB":0,"SM":0,"SS":0},"ProductVariant":{"AB":0,"SM":0,"SS":0},"ChannelVariant":{"Amazon":225740,"Walmart":31768},"CreatedAt":"2023-12-06T12:04:46.652755818-05:00"}

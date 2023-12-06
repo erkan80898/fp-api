@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 )
 
 type VariantCountAll struct {
 	InventoryVariant map[string]int
 	ProductVariant   map[string]int
 	ChannelVariant   map[string]int
+	CreatedAt        time.Time
 }
 
 func InitVariantCountAll() VariantCountAll {
@@ -31,7 +33,7 @@ func InitVariantCountAll() VariantCountAll {
 		channelVar[v] = 0
 	}
 
-	return VariantCountAll{invVar, productVar, channelVar}
+	return VariantCountAll{invVar, productVar, channelVar, time.Time{}}
 }
 
 func WriteJsonToFile(fileName string, data interface{}) {

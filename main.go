@@ -6,8 +6,7 @@ import (
 	Mod "flx/model"
 	"fmt"
 	"sync"
-
-	"github.com/kr/pretty"
+	"time"
 )
 
 const POOLLIMIT = 40
@@ -21,7 +20,7 @@ func main() {
 
 	stageOne, stageTwo := CountVariants(Mod.GET_INVENTORY_VARIANTS_PATH, Mod.GetInventoryVariant{Page: 0, PageSize: 100, IncludeLinkedProductVariants: true}, sources, sourceNames, "Inventory Variant Count:", true)
 
-	stageThree := CountListingVariants(channelNames, channels)
+	stageThree := CountListingVariants(channelNames, channels, Mod.GetCountListingVariant{})
 
 	for i, v := range sourceNames {
 		toWriteStruct.InventoryVariant[v] = stageOne[i]
@@ -32,7 +31,7 @@ func main() {
 		toWriteStruct.ChannelVariant[v] = stageThree[v]
 	}
 
-	pretty.Print(toWriteStruct)
+	toWriteStruct.CreatedAt = time.Now()
 	lib.WriteJsonToFile("output.txt", toWriteStruct)
 }
 
@@ -95,7 +94,7 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 	wg.Done()
 }
 
-func CountListingVariants(channelNames []string, channelTokens []string) map[string]int {
-	return (map[string]int{channelNames[0]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(Mod.GetCountListingVariant{}), channelTokens[0])["count"].(float64)),
-		channelNames[1]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(Mod.GetCountListingVariant{}), channelTokens[1])["count"].(float64))})
+func CountListingVariants(channelNames []string, channelTokens []string, query Mod.GetCountListingVariant) map[string]int {
+	return (map[string]int{channelNames[0]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[0])["count"].(float64)),
+		channelNames[1]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[1])["count"].(float64))})
 }

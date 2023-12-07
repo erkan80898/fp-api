@@ -13,8 +13,14 @@ import (
 const POOLLIMIT = 40
 
 func main() {
+	//BeginCount()
+	res := Lib.ReadAllLineAndFilter("fruitListingVariant.csv", "F_M_CRW_WHT_XL.*")
 	_, channels := Mod.RequestTokens()
-	pretty.Println(GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, channels[0], Mod.GetListingVariant{Skus: []string{"F_M_CRW_WHT_XL"}}))
+
+	for _, v := range res {
+		pretty.Println(GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, channels[0], Mod.GetListingVariant{Skus: v}))
+	}
+
 }
 
 func BeginCount() {

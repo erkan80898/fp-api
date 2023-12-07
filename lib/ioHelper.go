@@ -1,11 +1,13 @@
 package lib
 
 import (
+	"bufio"
 	"encoding/json"
 	Mod "flx/model"
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -52,4 +54,37 @@ func WriteJsonToFile(fileName string, data interface{}) {
 	if _, err := io.WriteString(file, string(jsonData)+"\n"); err != nil {
 		log.Panic(err)
 	}
+}
+
+// Max sku allowance = 50, so this function will break things up once its over 50 for the first dimension
+func ReadAllLineAndFilter(fileName string, rule string) [][]string {
+	file, err := os.OpenFile(fileName, os.O_RDONLY, 0644)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	fileScanner := bufio.NewScanner(file)
+
+	fileScanner.Split(bufio.ScanLines)
+
+	res := [][]string{}
+
+	for i, j := 0, 0; fileScanner.Scan(); {
+		if i == 50 {
+			j++
+			i = 0
+		}
+
+		line := fileScanner.Text()
+		if hit, _ := regexp.MatchString(rule, line); hit {
+			if j == len(res) {
+				res = append(res, []string{})
+			}
+			res[j] = append(res[j], line)
+			i++
+		}
+	}
+	return res
 }

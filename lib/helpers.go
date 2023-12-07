@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -9,11 +10,16 @@ import (
 	"time"
 )
 
-func AwaitResponse(method string, path string, token string) *http.Response {
+func AwaitResponse(method string, path string, token string, data interface{}) *http.Response {
 
 	client := &http.Client{}
+	var dataByte []byte = nil
 
-	req, err := http.NewRequest(method, path, nil)
+	if data != nil {
+		dataByte, _ = json.Marshal(data)
+	}
+
+	req, err := http.NewRequest(method, path, bytes.NewBuffer(dataByte))
 
 	if err != nil {
 		log.Fatal(err)
@@ -53,7 +59,7 @@ func HandleRateLimiting(resp *http.Header) error {
 // GET //
 func GetDataList(path string, token string) []interface{} {
 
-	resp := AwaitResponse("GET", path, token)
+	resp := AwaitResponse("GET", path, token, nil)
 
 	if err := HandleRateLimiting(&resp.Header); err != nil {
 		log.Fatal(err)
@@ -73,7 +79,7 @@ func GetDataList(path string, token string) []interface{} {
 
 func GetDataJson(path string, token string) map[string]interface{} {
 
-	resp := AwaitResponse("GET", path, token)
+	resp := AwaitResponse("GET", path, token, nil)
 
 	if err := HandleRateLimiting(&resp.Header); err != nil {
 		log.Fatal(err)
@@ -95,7 +101,7 @@ func GetDataJson(path string, token string) map[string]interface{} {
 // POST //
 func PostDataList(path string, model interface{}, token string) []interface{} {
 
-	resp := AwaitResponse("POST", path, token)
+	resp := AwaitResponse("POST", path, token, model)
 
 	if err := HandleRateLimiting(&resp.Header); err != nil {
 		log.Fatal(err)
@@ -115,7 +121,7 @@ func PostDataList(path string, model interface{}, token string) []interface{} {
 
 func PostDataJson(path string, model interface{}, token string) map[string]interface{} {
 
-	resp := AwaitResponse("POST", path, token)
+	resp := AwaitResponse("POST", path, token, model)
 
 	if err := HandleRateLimiting(&resp.Header); err != nil {
 		log.Fatal(err)

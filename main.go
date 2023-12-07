@@ -4,6 +4,7 @@ import (
 	"flx/lib"
 	Lib "flx/lib"
 	Mod "flx/model"
+	"os"
 	"sync"
 	"time"
 
@@ -17,10 +18,19 @@ func main() {
 	res := Lib.ReadAllLineAndFilter("fruitListingVariant.csv", "F_M_CRW_WHT_XL.*")
 	_, channels := Mod.RequestTokens()
 
+	toBeUpdated := []Mod.UpdateListingVariantBody{}
+
 	for _, v := range res {
-		pretty.Println(GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, channels[0], Mod.GetListingVariant{Skus: v}))
+		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, channels[0], Mod.GetListingVariant{Skus: v})
+		pretty.Println(resp)
+		toBeUpdated = append(toBeUpdated, Lib.UpdateQtyBody(resp, 0)...)
 	}
 
+	for _, v := range toBeUpdated {
+		resp := lib.PostDataJson(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT+Mod.QueryUrl(Mod.QtyUpdateOnlyQuery()), v, os.Getenv("FLX_API_TOKEN"))
+
+		pretty.Println(resp)
+	}
 }
 
 func BeginCount() {
@@ -111,6 +121,5 @@ func CountListingVariants(channelNames []string, channelTokens []string, query M
 }
 
 func GetVariants[T Mod.GetFamily](path string, token string, query T) []interface{} {
-	println(Mod.QueryUrl(query))
 	return Lib.GetDataList(path+Mod.QueryUrl(query), token)
 }

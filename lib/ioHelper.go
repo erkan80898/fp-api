@@ -57,7 +57,7 @@ func WriteJsonToFile(fileName string, data interface{}) {
 }
 
 // Max sku allowance = 50, so this function will break things up once its over 50 for the first dimension
-func ReadAllLineAndFilter(fileName string, rule string) [][]string {
+func ReadAllLineAndFilter(fileName string, rules []string) [][]string {
 	file, err := os.OpenFile(fileName, os.O_RDONLY, 0644)
 
 	if err != nil {
@@ -78,12 +78,15 @@ func ReadAllLineAndFilter(fileName string, rule string) [][]string {
 		}
 
 		line := fileScanner.Text()
-		if hit, _ := regexp.MatchString(rule, line); hit {
-			if j == len(res) {
-				res = append(res, []string{})
+
+		for i, v := range rules {
+			if hit, _ := regexp.MatchString(v, line); hit {
+				if j == len(res) {
+					res = append(res, []string{})
+				}
+				res[j] = append(res[j], line)
+				i++
 			}
-			res[j] = append(res[j], line)
-			i++
 		}
 	}
 	return res

@@ -57,7 +57,7 @@ func HandleRateLimiting(resp *http.Header) error {
 }
 
 // GET //
-func GetDataList(path string, token string) []interface{} {
+func GetDataList(path string, token string) []map[string]interface{} {
 
 	resp := AwaitResponse("GET", path, token, nil)
 
@@ -71,7 +71,7 @@ func GetDataList(path string, token string) []interface{} {
 		log.Fatal(err)
 	}
 
-	var objBody []interface{}
+	var objBody []map[string]interface{}
 
 	json.Unmarshal(body, &objBody)
 	return objBody
@@ -99,7 +99,7 @@ func GetDataJson(path string, token string) map[string]interface{} {
 }
 
 // POST //
-func PostDataList(path string, model interface{}, token string) []interface{} {
+func PostDataList(path string, model interface{}, token string) []map[string]interface{} {
 
 	resp := AwaitResponse("POST", path, token, model)
 
@@ -113,7 +113,7 @@ func PostDataList(path string, model interface{}, token string) []interface{} {
 		log.Fatal(err)
 	}
 
-	var objBody []interface{}
+	var objBody []map[string]interface{}
 
 	json.Unmarshal(body, &objBody)
 	return objBody

@@ -164,26 +164,13 @@ type CreateOrUpdateListingVariant struct {
 
 type UpdateListingVariantQuery struct {
 	//ALLOWED VALUES -> none, update, delete, updateNonNull
-	ModifyQuantityOverwrite string `json:"modifyQuantityOverwrite,omitempty"`
+	ModifyQuantityOverwrite string `json:"modifyQuantityOverwrite"`
 	//ALLOWED VALUES -> createOnly, updateOnly
-	RestrictCreateOrUpdate string `json:"restrictCreateOrUpdate,omitempty"`
-	//ALLOWED VALUES -> none, update, updateNonNull
-	ModifySyncData string `json:"modifySyncData,omitempty"`
+	RestrictCreateOrUpdate string `json:"restrictCreateOrUpdate"`
 }
 
 func QtyUpdateOnlyQuery() UpdateListingVariantQuery {
 	return UpdateListingVariantQuery{ModifyQuantityOverwrite: "update", RestrictCreateOrUpdate: "updateOnly"}
-}
-
-type UpdateListingVariantBody struct {
-	//Required
-	Sku              string `json:"sku"`
-	ChannelId        int    `json:"channelId"`
-	ProductVariantId int    `json:"productVariantId"`
-	//-------
-
-	QuantityOverwrite map[string]interface{} `json:"quantityOverwrite,omitempty"`
-	Quantity          int                    `json:"quantity,omitempty"`
 }
 
 func QueryUrl(data interface{}) string {

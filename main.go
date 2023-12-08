@@ -4,33 +4,15 @@ import (
 	"flx/lib"
 	Lib "flx/lib"
 	Mod "flx/model"
-	"os"
 	"sync"
 	"time"
-
-	"github.com/kr/pretty"
 )
 
 const POOLLIMIT = 40
 
 func main() {
 	//BeginCount()
-	res := Lib.ReadAllLineAndFilter("fruitListingVariant.csv", "F_M_CRW_WHT_XL.*")
-	_, channels := Mod.RequestTokens()
-
-	toBeUpdated := []Mod.UpdateListingVariantBody{}
-
-	for _, v := range res {
-		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, channels[0], Mod.GetListingVariant{Skus: v})
-		pretty.Println(resp)
-		toBeUpdated = append(toBeUpdated, Lib.UpdateQtyBody(resp, 0)...)
-	}
-
-	for _, v := range toBeUpdated {
-		resp := lib.PostDataJson(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT+Mod.QueryUrl(Mod.QtyUpdateOnlyQuery()), v, os.Getenv("FLX_API_TOKEN"))
-
-		pretty.Println(resp)
-	}
+	UpdateListingQty("fruitListingVariant.csv", []string{"_P20_", "8_.*P_6DCSHC1_", "_M41_", "_S1_", "_S4_", "_P2_", "_P14_"}, 0)
 }
 
 func BeginCount() {
@@ -40,7 +22,7 @@ func BeginCount() {
 
 	toWriteStruct := Lib.InitVariantCountAll()
 
-	stageOne, stageTwo := CountVariants(Mod.GET_INVENTORY_VARIANTS_PATH, Mod.GetInventoryVariant{Page: 0, PageSize: 100, IncludeLinkedProductVariants: true}, sources, sourceNames, "Inventory Variant Count:", true)
+	stageOne, stageTwo := CountVariants(Mod.GET_INVENTORY_VARIANTS_PATH, Mod.GetInventoryVariant{Page: 0, PageSize: 100}, sources, sourceNames, "Inventory Variant Count:", true)
 
 	stageThree := CountListingVariants(channelNames, channels, Mod.GetCountListingVariant{})
 
@@ -92,10 +74,10 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 		if len(ch) == 0 {
 			ch <- count
 			if extra {
-				chExtra <- len(resp[0].(map[string]interface{})["linkedProductVariants"].([]interface{}))
+				chExtra <- len(resp[0]["linkedProductVariants"].([]interface{}))
 				for i := 1; i < count; i++ {
 					x := <-chExtra
-					chExtra <- x + len(resp[i].(map[string]interface{})["linkedProductVariants"].([]interface{}))
+					chExtra <- x + len(resp[i]["linkedProductVariants"].([]interface{}))
 				}
 			}
 		} else {
@@ -104,7 +86,7 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 			if extra {
 				for i := 0; i < count; i++ {
 					x := <-chExtra
-					chExtra <- x + len(resp[i].(map[string]interface{})["linkedProductVariants"].([]interface{}))
+					chExtra <- x + len(resp[i]["linkedProductVariants"].([]interface{}))
 				}
 			}
 		}
@@ -120,6 +102,25 @@ func CountListingVariants(channelNames []string, channelTokens []string, query M
 		channelNames[1]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[1])["count"].(float64))})
 }
 
-func GetVariants[T Mod.GetFamily](path string, token string, query T) []interface{} {
+func GetVariants[T Mod.GetFamily](path string, token string, query T) []map[string]interface{} {
 	return Lib.GetDataList(path+Mod.QueryUrl(query), token)
+}
+
+func UpdateListingQty(allVariantFile string, regex []string, qty int) error {
+	res := Lib.ReadAllLineAndFilter(allVariantFile, regex)
+	toBeUpdated := []map[string]interface{}{}
+
+	for _, v := range res {
+
+		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v, IncludeOverwrites: true})
+		Lib.UpdateQtyBody(&resp, qty)
+		toBeUpdated = append(toBeUpdated, resp...)
+	}
+
+	for _, v := range toBeUpdated {
+		lib.PostDataJson(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT+Mod.QueryUrl(Mod.QtyUpdateOnlyQuery()), v, Mod.RequestAccToken())
+	}
+
+	println("BULK QTY UPDATE - COMPLETE")
+	return nil
 }

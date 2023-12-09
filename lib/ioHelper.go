@@ -79,7 +79,7 @@ func ReadAllLineAndFilter(fileName string, rules []string) [][]string {
 
 		line := fileScanner.Text()
 
-		for i, v := range rules {
+		for _, v := range rules {
 			if hit, _ := regexp.MatchString(v, line); hit {
 				if j == len(res) {
 					res = append(res, []string{})

@@ -1,7 +1,6 @@
-package main
+package action
 
 import (
-	"flx/lib"
 	Lib "flx/lib"
 	Mod "flx/model"
 	"sync"
@@ -10,11 +9,6 @@ import (
 
 const POOLLIMIT = 40
 
-func main() {
-	//BeginCount()
-	UpdateListingQty("fruitListingVariant.csv", []string{"_P20_", "8_.*P_6DCSHC1_", "_M41_", "_S1_", "_S4_", "_P2_", "_P14_"}, 0)
-}
-
 func BeginCount() {
 	sources, channels := Mod.RequestTokens()
 	sourceNames := Mod.GatherTokens().Sources
@@ -22,7 +16,7 @@ func BeginCount() {
 
 	toWriteStruct := Lib.InitVariantCountAll()
 
-	stageOne, stageTwo := CountVariants(Mod.GET_INVENTORY_VARIANTS_PATH, Mod.GetInventoryVariant{Page: 0, PageSize: 100}, sources, sourceNames, "Inventory Variant Count:", true)
+	stageOne, stageTwo := CountVariants(Mod.GET_INVENTORY_VARIANTS_PATH, Mod.GetInventoryVariant{Page: 0, PageSize: 100, IncludeLinkedProductVariants: true}, sources, sourceNames, "Inventory Variant Count:", true)
 
 	stageThree := CountListingVariants(channelNames, channels, Mod.GetCountListingVariant{})
 
@@ -36,7 +30,7 @@ func BeginCount() {
 	}
 
 	toWriteStruct.CreatedAt = time.Now()
-	lib.WriteJsonToFile("output.txt", toWriteStruct)
+	Lib.WriteJsonToFile("output.txt", toWriteStruct)
 }
 
 func CountVariants[T Mod.GetFamily](path string, query T, tokens []string, tokenNames []string, message string, extra bool) ([]int, []int) {
@@ -93,6 +87,7 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 		query = query.StepPage(POOLLIMIT).(T)
 		resp = Lib.GetDataList(path+Mod.QueryUrl(query), token)
 		count = len(resp)
+		println(count)
 	}
 	wg.Done()
 }
@@ -100,27 +95,4 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 func CountListingVariants(channelNames []string, channelTokens []string, query Mod.GetCountListingVariant) map[string]int {
 	return (map[string]int{channelNames[0]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[0])["count"].(float64)),
 		channelNames[1]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[1])["count"].(float64))})
-}
-
-func GetVariants[T Mod.GetFamily](path string, token string, query T) []map[string]interface{} {
-	return Lib.GetDataList(path+Mod.QueryUrl(query), token)
-}
-
-func UpdateListingQty(allVariantFile string, regex []string, qty int) error {
-	res := Lib.ReadAllLineAndFilter(allVariantFile, regex)
-	toBeUpdated := []map[string]interface{}{}
-
-	for _, v := range res {
-
-		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v, IncludeOverwrites: true})
-		Lib.UpdateQtyBody(&resp, qty)
-		toBeUpdated = append(toBeUpdated, resp...)
-	}
-
-	for _, v := range toBeUpdated {
-		lib.PostDataJson(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT+Mod.QueryUrl(Mod.QtyUpdateOnlyQuery()), v, Mod.RequestAccToken())
-	}
-
-	println("BULK QTY UPDATE - COMPLETE")
-	return nil
 }

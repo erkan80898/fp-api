@@ -2,13 +2,14 @@ package lib
 
 import (
 	"bufio"
-	"encoding/json"
 	Mod "flx/model"
 	"io"
 	"log"
 	"os"
 	"regexp"
 	"time"
+
+	"github.com/kr/pretty"
 )
 
 type VariantCountAll struct {
@@ -39,19 +40,13 @@ func InitVariantCountAll() VariantCountAll {
 }
 
 func WriteJsonToFile(fileName string, data interface{}) {
-	jsonData, err := json.Marshal(data)
-
-	if err != nil {
-		log.Panic(err)
-	}
-
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	if _, err := io.WriteString(file, string(jsonData)+"\n"); err != nil {
+	if _, err := io.WriteString(file, pretty.Sprint(data)+"\n"); err != nil {
 		log.Panic(err)
 	}
 }

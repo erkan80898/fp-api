@@ -5,7 +5,15 @@ import (
 	Mod "flx/model"
 	"fmt"
 	"strings"
+	"time"
+
+	"github.com/kr/pretty"
 )
+
+type UpdateLog struct {
+	Log       []string
+	CreatedAt time.Time
+}
 
 func GetVariants[T Mod.GetFamily](path string, token string, query T) []map[string]interface{} {
 	return Lib.GetDataList(path+Mod.QueryUrl(query), token)
@@ -15,10 +23,14 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 	res := Lib.ReadAllLineAndFilter(allVariantFile, regex)
 	toBeUpdated := []map[string]interface{}{}
 	output := ""
+	log := UpdateLog{
+		CreatedAt: time.Now(),
+	}
 
 	for _, v := range res {
 
 		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v, IncludeOverwrites: true})
+		log.Log = append(log.Log, v...)
 		output = UpdateQtyBody(&resp, qty)
 		toBeUpdated = append(toBeUpdated, resp...)
 	}
@@ -28,6 +40,9 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 	}
 
 	output += "\nBULK QTY UPDATE - COMPLETE"
+
+	pretty.Println(log)
+	Lib.WriteJsonToFile("updateQtyLog.txt", log)
 	return output
 }
 

@@ -87,7 +87,6 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 		query = query.StepPage(POOLLIMIT).(T)
 		resp = Lib.GetDataList(path+Mod.QueryUrl(query), token)
 		count = len(resp)
-		println(count)
 	}
 	wg.Done()
 }

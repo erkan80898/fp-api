@@ -1,15 +1,12 @@
 package main
 
 import (
-	"image/color"
 	"log"
 	"strconv"
 
 	Action "flx/action"
 
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -19,9 +16,7 @@ func main() {
 
 	quantityEntry := widget.NewEntry()
 	skuToChange := widget.NewMultiLineEntry()
-	outputText := canvas.NewText("Output", color.White)
-	outputText.Alignment = fyne.TextAlignTrailing
-	outputText.TextStyle = fyne.TextStyle{Italic: true}
+	outputText := widget.NewTextGridFromString("")
 
 	form := &widget.Form{
 		Items: []*widget.FormItem{
@@ -37,8 +32,7 @@ func main() {
 			}
 
 			resp := Action.Run(qty, skuToChange.Text)
-			outputText.Text = resp
-			myWindow.Close()
+			outputText.SetText(resp)
 		},
 	}
 

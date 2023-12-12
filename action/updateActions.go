@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/kr/pretty"
 )
 
 type UpdateLog struct {
 	Log       []string
+	Qty       int
 	CreatedAt time.Time
 }
 
@@ -24,12 +23,13 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 	toBeUpdated := []map[string]interface{}{}
 	output := ""
 	log := UpdateLog{
+		Qty:       qty,
 		CreatedAt: time.Now(),
 	}
 
 	for _, v := range res {
 
-		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v, IncludeOverwrites: true})
+		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v})
 		log.Log = append(log.Log, v...)
 		output = UpdateQtyBody(&resp, qty)
 		toBeUpdated = append(toBeUpdated, resp...)
@@ -41,7 +41,6 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 
 	output += "\nBULK QTY UPDATE - COMPLETE"
 
-	pretty.Println(log)
 	Lib.WriteJsonToFile("updateQtyLog.txt", log)
 	return output
 }
@@ -50,6 +49,9 @@ func UpdateQtyBody(data *[]map[string]interface{}, qty int) string {
 	output := ""
 
 	for _, v := range *data {
+		v["quantityOverwrite"] = make(map[string]bool, 2)
+		v["quantityOverwrite"].(map[string]bool)["quantityOverwritten"] = true
+		v["quantityOverwrite"].(map[string]bool)["isLockedByOrderVolumeProtection"] = false
 		v["quantity"] = qty
 		output += fmt.Sprintf("%s's qty updated to: %d\n", v["sku"], qty)
 	}

@@ -1,2 +1,8 @@
 {"InventoryVariant":{"AB":139660,"SM":120438,"SS":56879},"ProductVariant":{"AB":139025,"SM":0,"SS":56688},"ChannelVariant":{"Amazon":228966,"Walmart":31768},"CreatedAt":"2023-12-07T14:20:01.446824243-05:00"}
 {"InventoryVariant":{"AB":139664,"SM":120442,"SS":56951},"ProductVariant":{"AB":139025,"SM":0,"SS":56688},"ChannelVariant":{"Amazon":229161,"Walmart":31768},"CreatedAt":"2023-12-09T10:50:34.555505802-05:00"}
+lib.VariantCountAll{
+    InventoryVariant: {"AB":139669, "SM":120440, "SS":56951},
+    ProductVariant:   {"AB":139025, "SM":0, "SS":56688},
+    ChannelVariant:   {"Amazon":225411, "Walmart":31768},
+    CreatedAt:        time.Date(2023, time.December, 12, 12, 15, 57, 221536438, time.Local),
+}

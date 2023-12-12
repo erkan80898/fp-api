@@ -12,7 +12,7 @@ import (
 
 func main() {
 	myApp := app.New()
-	myWindow := myApp.NewWindow("Form Widget")
+	myWindow := myApp.NewWindow("Inventory Updater")
 
 	quantityEntry := widget.NewEntry()
 	skuToChange := widget.NewMultiLineEntry()

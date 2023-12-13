@@ -21,7 +21,7 @@ func main() {
 	form := &widget.Form{
 		Items: []*widget.FormItem{
 			{Text: "New Quantity", Widget: quantityEntry},
-			{Text: "Product Address - seperate by ,", Widget: skuToChange},
+			{Text: "Product Address EX: A[1+2+21], B[1+22]", Widget: skuToChange},
 			{Text: "", Widget: outputText},
 		},
 		OnSubmit: func() {

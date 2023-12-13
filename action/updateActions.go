@@ -62,12 +62,19 @@ func Run(qty int, skusAsText string) string {
 
 	parts := strings.Split(skusAsText, ",")
 
-	for i, _ := range parts {
+	res := []string{}
+	for i := range parts {
 		parts[i] = strings.TrimSpace(parts[i])
-		if len(parts[i]) <= 4 {
+		if strings.Index(parts[i], "[") != -1 {
+			letter := string(parts[i][0])
+			nums := strings.Split(parts[i][2:len(parts[i])-1], "+")
+			for i, v := range nums {
+				nums[i] = "_" + letter + v + "_"
+				res = append(res, nums[i])
+			}
+		} else if len(parts[i]) <= 4 {
 			parts[i] = "_" + parts[i] + "_"
 		}
 	}
-
-	return UpdateListingQty("fruitListingVariant.csv", parts, qty)
+	return UpdateListingQty("fruitListingVariant.csv", res, qty)
 }

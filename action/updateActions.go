@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// TODO: Move logging outside and implement more accurate debugging - using data matching technique
 type UpdateLog struct {
 	Log       []string
 	Qty       int

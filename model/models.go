@@ -52,11 +52,6 @@ type GetInventoryVariant struct {
 	UpdatedAfter                 string   `json:"updatedAfter"`
 }
 
-func (x GetInventoryVariant) StepPage(step int) interface{} {
-	x.Page += step
-	return x
-}
-
 type GetProductVariant struct {
 	IncludeTags             bool     `json:"includeTag"`
 	Page                    int      `json:"page"`
@@ -76,11 +71,6 @@ type GetProductVariant struct {
 	IncludeParent           bool     `json:"includeParent"`
 	Skus                    []string `json:"skus"`
 	UpdatedAfter            string   `json:"updatedAfter"`
-}
-
-func (x GetProductVariant) StepPage(step int) interface{} {
-	x.Page += step
-	return x
 }
 
 type GetListingVariant struct {
@@ -103,33 +93,19 @@ type GetListingVariant struct {
 	UpdatedAfter            string   `json:"updatedAfter"`
 }
 
-func (x GetListingVariant) StepPage(step int) interface{} {
+func (x GetInventoryVariant) StepPage(step int) interface{} {
 	x.Page += step
 	return x
 }
 
-type GetChannels struct {
-	IncludeArchived     bool `json:"includeArchived"`
-	IncludeIntegrations bool `json:"includeIntegrations"`
+func (x GetProductVariant) StepPage(step int) interface{} {
+	x.Page += step
+	return x
 }
 
-type GetSources struct {
-	FilterArchived        bool     `json:"filterArchived"`
-	FilterByIds           []string `json:"filterByIds"`
-	FilterFirearmsEnabled bool     `json:"filterFirearmsEnabled"`
-	IncludeAddress        bool     `json:"includeAddress"`
-	IncludeIntegrations   bool     `json:"includeIntegrations"`
-}
-
-type GetSearchInventoryVariants struct {
-	FilterByInventoryVariantIds string   `json:"filterByInventoryVariantIds"`
-	FilterBySkus                []string `json:"filterBySkus"`
-	FilterNeedsDeleting         bool     `json:"filterNeedsDeleting"`
-	FilterPageNumber            int      `json:"filterPageNumber"`
-	FilterPageSize              int      `json:"filterPageSize"`
-	FilterSourceId              int      `json:"filterSourceId"`
-	FilterUpdatedAfter          []string `json:"filterUpdatedAfter"`
-	Ids                         []int    `json:"ids"`
+func (x GetListingVariant) StepPage(step int) interface{} {
+	x.Page += step
+	return x
 }
 
 type GetCountListingVariant struct {
@@ -145,27 +121,10 @@ type GetCountListingVariant struct {
 	UpdatedAfter        string   `json:"updatedAfter"`
 }
 
-type CreateOrUpdateListingVariant struct {
-	ModifyChannelData         string `json:"modifyChannelData,omitempty"`
-	ModifyContent             string `json:"modifyContent,omitempty"`
-	ModifyDimensions          string `json:"modifyDimensions,omitempty"`
-	ModifyIdentifiers         string `json:"modifyIdentifiers,omitempty"`
-	ModifyImages              string `json:"modifyImages,omitempty"`
-	ModifyOptions             string `json:"modifyOptions,omitempty"`
-	ModifyPriceOverwrite      string `json:"modifyPriceOverwrite,omitempty"`
-	ModifyPublishData         string `json:"modifyPublishData,omitempty"`
-	ModifyQuantityOverwrite   string `json:"modifyQuantityOverwrite,omitempty"`
-	ModifyStatusData          string `json:"modifyStatusData,omitempty"`
-	ModifySyncData            string `json:"modifySyncData,omitempty"`
-	ModifyVariantCustomFields string `json:"modifyVariantCustomFields,omitempty"`
-	RestrictCreateOrUpdate    string `json:"restrictCreateOrUpdate,omitempty"`
-	MasterSkuUpdateContent    bool   `json:"masterSkuUpdateContent,omitempty"`
-}
-
 type UpdateListingVariantQuery struct {
-	//ALLOWED VALUES -> none, update, delete, updateNonNull
+	//none, update, delete, updateNonNull
 	ModifyQuantityOverwrite string `json:"modifyQuantityOverwrite"`
-	//ALLOWED VALUES -> createOnly, updateOnly
+	//createOnly, updateOnly
 	RestrictCreateOrUpdate string `json:"restrictCreateOrUpdate"`
 }
 

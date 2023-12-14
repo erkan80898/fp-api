@@ -2,6 +2,9 @@ package model
 
 import "os"
 
+const POOLLIMIT = 40
+const MAXROUTINE = POOLLIMIT
+
 type TokenNames struct {
 	Sources  []string
 	Channels []string

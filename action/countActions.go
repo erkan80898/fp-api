@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-const POOLLIMIT = 40
-
 func BeginCount() {
 	sources, channels := Mod.RequestTokens()
 	sourceNames := Mod.GatherTokens().Sources
@@ -41,8 +39,8 @@ func CountVariants[T Mod.GetFamily](path string, query T, tokens []string, token
 		var wg sync.WaitGroup
 		ch := make(chan int, 1)
 		chExtra := make(chan int, 1)
-		wg.Add(POOLLIMIT)
-		for j := 1; j <= POOLLIMIT; j++ {
+		wg.Add(Mod.MAXROUTINE)
+		for j := 1; j <= Mod.MAXROUTINE; j++ {
 			queryLocal := query.StepPage(j).(T)
 			go ConcurrentCount(path, &wg, ch, chExtra, tokens[i], queryLocal, extra)
 		}
@@ -62,7 +60,7 @@ func CountVariants[T Mod.GetFamily](path string, query T, tokens []string, token
 
 func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan int, chExtra chan int, token string, query T, extra bool) {
 
-	resp := Lib.GetDataList(path+Mod.QueryUrl(query), token)
+	resp := Lib.GetData[[]map[string]interface{}](path+Mod.QueryUrl(query), token)
 	count := len(resp)
 	for count > 0 {
 		if len(ch) == 0 {
@@ -84,14 +82,14 @@ func ConcurrentCount[T Mod.GetFamily](path string, wg *sync.WaitGroup, ch chan i
 				}
 			}
 		}
-		query = query.StepPage(POOLLIMIT).(T)
-		resp = Lib.GetDataList(path+Mod.QueryUrl(query), token)
+		query = query.StepPage(Mod.MAXROUTINE).(T)
+		resp = Lib.GetData[[]map[string]interface{}](path+Mod.QueryUrl(query), token)
 		count = len(resp)
 	}
 	wg.Done()
 }
 
 func CountListingVariants(channelNames []string, channelTokens []string, query Mod.GetCountListingVariant) map[string]int {
-	return (map[string]int{channelNames[0]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[0])["count"].(float64)),
-		channelNames[1]: int(Lib.GetDataJson(Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[1])["count"].(float64))})
+	return (map[string]int{channelNames[0]: int(Lib.GetData[map[string]interface{}](Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[0])["count"].(float64)),
+		channelNames[1]: int(Lib.GetData[map[string]interface{}](Mod.GET_LISTING_VARIANTS_PATH+Mod.COUNT_URL_EXT+Mod.QueryUrl(query), channelTokens[1])["count"].(float64))})
 }

@@ -5,6 +5,7 @@ import (
 	Mod "flx/model"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type UpdateLog struct {
 }
 
 func GetVariants[T Mod.GetFamily](path string, token string, query T) []map[string]interface{} {
-	return Lib.GetDataList(path+Mod.QueryUrl(query), token)
+	return Lib.GetData[[]map[string]interface{}](path+Mod.QueryUrl(query), token)
 }
 
 func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
@@ -28,17 +29,29 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 	}
 
 	for _, v := range res {
-
 		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v})
 		log.Log = append(log.Log, v...)
 		output = UpdateQtyBody(&resp, qty)
 		toBeUpdated = append(toBeUpdated, resp...)
 	}
 
-	for _, v := range toBeUpdated {
-		Lib.PostDataJson(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT+Mod.QueryUrl(Mod.QtyUpdateOnlyQuery()), v, Mod.RequestAccToken())
+	chunks := Lib.PartitionByN(toBeUpdated, Mod.MAXROUTINE)
+
+	routineCount := len(chunks)
+	var wg sync.WaitGroup
+	wg.Add(routineCount)
+
+	for i := 0; i < routineCount; i++ {
+		x := chunks[i]
+		go func() {
+			for _, v := range x {
+				Lib.PostData[map[string]interface{}](Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT+Mod.QueryUrl(Mod.QtyUpdateOnlyQuery()), v, Mod.RequestAccToken())
+			}
+			wg.Done()
+		}()
 	}
 
+	wg.Wait()
 	output += "\nBULK QTY UPDATE - COMPLETE"
 
 	Lib.WriteJsonToFile("updateQtyLog.txt", log)
@@ -61,22 +74,22 @@ func UpdateQtyBody(data *[]map[string]interface{}, qty int) string {
 func Run(qty int, skusAsText string) string {
 
 	parts := strings.Split(skusAsText, ",")
-
 	res := []string{}
 	for i := range parts {
 		parts[i] = strings.TrimSpace(parts[i])
 		if strings.Index(parts[i], "[") != -1 {
 			letter := string(parts[i][0])
-			nums := strings.Split(parts[i][2:len(parts[i])-1], "+")
-			for i, v := range nums {
-				nums[i] = "_" + letter + v + "_"
-				res = append(res, parts[i])
-				continue
+			rest := string(parts[i][2 : len(parts[i])-1])
+			nums := strings.Split(rest, "+")
+			for _, v := range nums {
+				res = append(res, "_"+letter+v+"_")
 			}
 		} else if len(parts[i]) <= 4 {
-			parts[i] = "_" + parts[i] + "_"
+			res = append(res, "_"+parts[i]+"_")
+		} else {
+			res = append(res, parts[i])
 		}
-		res = append(res, parts[i])
 	}
+
 	return UpdateListingQty("fruitListingVariant.csv", res, qty)
 }

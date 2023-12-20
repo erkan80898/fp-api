@@ -126,11 +126,31 @@ type UpdateListingVariantQuery struct {
 	ModifyQuantityOverwrite string `json:"modifyQuantityOverwrite"`
 	//createOnly, updateOnly
 	RestrictCreateOrUpdate string `json:"restrictCreateOrUpdate"`
+	
+	//none, update, updateNonNull
+	ModifyStatusData string `json:"modifyStatusData"`
 }
 
-func QtyUpdateOnlyQuery() UpdateListingVariantQuery {
-	return UpdateListingVariantQuery{ModifyQuantityOverwrite: "update", RestrictCreateOrUpdate: "updateOnly"}
+func QtyUpdateQuery() UpdateListingVariantQuery {
+	return UpdateListingVariantQuery{ModifyQuantityOverwrite: "update", RestrictCreateOrUpdate: "updateOnly", ModifyStatusData: "none"}
 }
+
+func StatusUpdateQuery() UpdateListingVariantQuery {
+	return UpdateListingVariantQuery{ModifyQuantityOverwrite: "none", RestrictCreateOrUpdate: "updateOnly", ModifyStatusData: "update"}
+}
+
+type VariantState string
+
+const (
+	NOT_LISTED   VariantState = "not_listed"    
+	LISTED       VariantState = "listed"        
+	DELISTED   VariantState = "delisted"
+	PAUSED       VariantState = "paused"        
+	HIDDEN	   VariantState = "hidden"        	
+	PUBLISHED	VariantState = "published"     	
+	BROKEN_LINK  VariantState = "broken_link"   
+	OVERWRITE_DATA  VariantState = "overwrite_data"
+)                                               
 
 func QueryUrl(data interface{}) string {
 	res := "?"

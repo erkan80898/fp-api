@@ -21,11 +21,9 @@ type VariantCountAll struct {
 
 func InitVariantCountAll() VariantCountAll {
 	tokenNames := Mod.GatherTokens()
-
 	invVar := make(map[string]int)
 	productVar := make(map[string]int)
 	channelVar := make(map[string]int)
-
 	for _, v := range tokenNames.Sources {
 		invVar[v] = 0
 	}
@@ -35,17 +33,14 @@ func InitVariantCountAll() VariantCountAll {
 	for _, v := range tokenNames.Channels {
 		channelVar[v] = 0
 	}
-
 	return VariantCountAll{invVar, productVar, channelVar, time.Time{}}
 }
 
 func WriteJsonToFile(fileName string, data interface{}) {
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-
 	if err != nil {
 		log.Panic(err)
 	}
-
 	if _, err := io.WriteString(file, pretty.Sprint(data)+"\n"); err != nil {
 		log.Panic(err)
 	}
@@ -55,26 +50,19 @@ func WriteJsonToFile(fileName string, data interface{}) {
 // break things up once its over 50 for the first dimension
 func ReadAllLineAndFilter(fileName string, rules []string) [][]string {
 	file, err := os.OpenFile(fileName, os.O_RDONLY, 0644)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
-
 	fileScanner := bufio.NewScanner(file)
-
 	fileScanner.Split(bufio.ScanLines)
-
 	res := [][]string{}
-
 	for i, j := 0, 0; fileScanner.Scan(); {
 		if i == 50 {
 			j++
 			i = 0
 		}
-
 		line := fileScanner.Text()
-
 		for _, v := range rules {
 			if hit, _ := regexp.MatchString(v, line); hit {
 				if j == len(res) {

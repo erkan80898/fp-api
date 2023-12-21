@@ -28,7 +28,7 @@ func BeginCount() {
 	}
 
 	toWriteStruct.CreatedAt = time.Now()
-	Lib.WriteJsonToFile("output.txt", toWriteStruct)
+	Lib.WriteJsonToFile("output/stageVariantCount.txt", toWriteStruct)
 }
 
 func CountVariants[T Mod.GetFamily](path string, query T, tokens []string, tokenNames []string, message string, extra bool) ([]int, []int) {

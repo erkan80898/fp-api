@@ -14,36 +14,29 @@ type NetData interface {
 	[]map[string]interface{} | map[string]interface{}
 }
 
-func AwaitResponse(method string, path string, token string, data interface{}) *http.Response {
-
+func awaitResponse(method string, path string, token string, data interface{}) *http.Response {
 	client := &http.Client{}
 	var dataByte []byte = nil
-
 	if data != nil {
 		dataByte, _ = json.Marshal(data)
 	}
-
 	req, err := http.NewRequest(method, path, bytes.NewBuffer(dataByte))
-
 	if err != nil {
 		log.Fatal(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-API-TOKEN", token)
-
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if err := HandleRateLimiting(&resp.Header); err != nil {
+	if err := handleRateLimiting(&resp.Header); err != nil {
 		log.Fatal(err)
 	}
-
 	return resp
 }
 
-func HandleRateLimiting(resp *http.Header) error {
+func handleRateLimiting(resp *http.Header) error {
 	pool, err := strconv.Atoi(resp.Get("X-Auth-Pool-Size"))
 	if err != nil {
 		return err
@@ -56,41 +49,33 @@ func HandleRateLimiting(resp *http.Header) error {
 	if err != nil {
 		return err
 	}
-
 	if pool <= used {
 		println("RATE LIMIT REACHED : ON HOLD")
 		time.Sleep(time.Duration(time.Duration(pool / int(replenishRate)).Seconds()))
 	}
-
 	return nil
 }
 
 func GetData[T NetData](path string, token string) T {
-	resp := AwaitResponse("GET", path, token, nil)
-
+	resp := awaitResponse("GET", path, token, nil)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	var objBody T
-
 	json.Unmarshal(body, &objBody)
 	return objBody
 }
 
 func PostData[T NetData](path string, model interface{}, token string) T {
-	resp := AwaitResponse("POST", path, token, model)
-
+	resp := awaitResponse("POST", path, token, model)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	var objBody T
-
 	json.Unmarshal(body, &objBody)
 	return objBody
 }

@@ -8,14 +8,15 @@ import (
 	"time"
 )
 
-type logType interface{
+type logType interface {
 	string | int
 }
+
 // TODO: Move logging outside and implement more accurate debugging - using data matching technique
 type UpdateLog[T logType] struct {
-	Log       []string
+	Log         []string
 	ChangeOrQty T
-	CreatedAt time.Time
+	CreatedAt   time.Time
 }
 
 func GetVariants[T Mod.GetFamily](path string, token string, query T) []map[string]interface{} {
@@ -30,7 +31,7 @@ func updateQtyBody(data *[]map[string]interface{}, qty int) string {
 		v["quantityOverwrite"].(map[string]bool)["isLockedByOrderVolumeProtection"] = false
 		v["quantity"] = qty
 
-		if qty > 0{
+		if qty > 0 {
 			v["changeToListingStatus"] = map[string]string{"handle": "listed"}
 		}
 		output += fmt.Sprintf("%s's qty updated to: %d\n", v["sku"], qty)
@@ -57,6 +58,7 @@ func takeAction(toBeUpdated []map[string]interface{}, routine func() Mod.UpdateL
 		go func() {
 			for _, v := range x {
 				Lib.PostData[map[string]interface{}](Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT+Mod.QueryUrl(routine()), v, Mod.RequestAccToken())
+				AB_F_M_CRW / HD_MILGRN_L_2P_R6
 			}
 			wg.Done()
 		}()
@@ -70,7 +72,7 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 	output := ""
 	log := UpdateLog[int]{
 		ChangeOrQty: qty,
-		CreatedAt: time.Now(),
+		CreatedAt:   time.Now(),
 	}
 	for _, v := range res {
 		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v})
@@ -80,10 +82,9 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 	}
 	takeAction(toBeUpdated, Mod.QtyUpdateQuery)
 	output += "\nBULK QTY UPDATE - COMPLETE"
-	Lib.WriteJsonToFile("updateQtyLog.txt", log)
+	Lib.WriteJsonToFile("output/updateQtyLog.txt", log)
 	return output
 }
-
 
 func UpdateListingState(allVariantFile string, regex []string, state Mod.VariantState) string {
 	res := Lib.ReadAllLineAndFilter(allVariantFile, regex)
@@ -91,7 +92,7 @@ func UpdateListingState(allVariantFile string, regex []string, state Mod.Variant
 	output := ""
 	log := UpdateLog[string]{
 		ChangeOrQty: string(state),
-		CreatedAt: time.Now(),
+		CreatedAt:   time.Now(),
 	}
 	for _, v := range res {
 		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v})
@@ -101,6 +102,6 @@ func UpdateListingState(allVariantFile string, regex []string, state Mod.Variant
 	}
 	takeAction(toBeUpdated, Mod.StatusUpdateQuery)
 	output += "\nBULK DELIST - COMPLETE"
-	Lib.WriteJsonToFile("updateDelistLog.txt", log)
+	Lib.WriteJsonToFile("output/updateDelistLog.txt", log)
 	return output
 }

@@ -3,13 +3,13 @@ package lib
 import (
 	"bufio"
 	Mod "flx/model"
+	"github.com/kr/pretty"
 	"io"
 	"log"
 	"os"
 	"regexp"
+	"strings"
 	"time"
-
-	"github.com/kr/pretty"
 )
 
 type VariantCountAll struct {
@@ -62,8 +62,9 @@ func ReadAllLineAndFilter(fileName string, rules []string) [][]string {
 			j++
 			i = 0
 		}
-		line := fileScanner.Text()
+		line := strings.ToUpper(fileScanner.Text())
 		for _, v := range rules {
+			v = strings.ToUpper(v)
 			if hit, _ := regexp.MatchString(v, line); hit {
 				if j == len(res) {
 					res = append(res, []string{})

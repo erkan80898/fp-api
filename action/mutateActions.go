@@ -8,14 +8,15 @@ import (
 	"time"
 )
 
-type logType interface{
+type logType interface {
 	string | int
 }
+
 // TODO: Move logging outside and implement more accurate debugging - using data matching technique
 type UpdateLog[T logType] struct {
-	Log       []string
+	Log         []string
 	ChangeOrQty T
-	CreatedAt time.Time
+	CreatedAt   time.Time
 }
 
 func GetVariants[T Mod.GetFamily](path string, token string, query T) []map[string]interface{} {
@@ -30,7 +31,7 @@ func updateQtyBody(data *[]map[string]interface{}, qty int) string {
 		v["quantityOverwrite"].(map[string]bool)["isLockedByOrderVolumeProtection"] = false
 		v["quantity"] = qty
 
-		if qty > 0{
+		if qty > 0 {
 			v["changeToListingStatus"] = map[string]string{"handle": "listed"}
 		}
 		output += fmt.Sprintf("%s's qty updated to: %d\n", v["sku"], qty)
@@ -70,7 +71,7 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 	output := ""
 	log := UpdateLog[int]{
 		ChangeOrQty: qty,
-		CreatedAt: time.Now(),
+		CreatedAt:   time.Now(),
 	}
 	for _, v := range res {
 		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v})
@@ -84,14 +85,13 @@ func UpdateListingQty(allVariantFile string, regex []string, qty int) string {
 	return output
 }
 
-
 func UpdateListingState(allVariantFile string, regex []string, state Mod.VariantState) string {
 	res := Lib.ReadAllLineAndFilter(allVariantFile, regex)
 	toBeUpdated := []map[string]interface{}{}
 	output := ""
 	log := UpdateLog[string]{
 		ChangeOrQty: string(state),
-		CreatedAt: time.Now(),
+		CreatedAt:   time.Now(),
 	}
 	for _, v := range res {
 		resp := GetVariants(Mod.FLX_URL+Mod.LISTING_URL_EXT+Mod.PLURAL_VARIANT_URL_EXT, Mod.RequestAccToken(), Mod.GetListingVariant{Skus: v})
